@@ -1,30 +1,57 @@
 import { useState, useEffect } from 'react';
-import Head from 'next/head';
-import NavBar from '../components/NavBar';
+import Link from 'next/link';
 
 export default function PlayerStats() {
-  const [players, setPlayers] = useState([]);
-  // ... existing player stats logic
+  const [stats, setStats] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        setError('Failed to fetch player stats');
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
-    <>
-      <Head>
-        <title>Player Stats - BP Golf League</title>
-      </Head>
-      <div style={{ minHeight: '100vh', backgroundColor: '#1B4D3E' }}>
-        <NavBar />
-        <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 0' }}>
-          <h2 style={{ 
-            color: '#F5E8C7', 
-            textAlign: 'center', 
-            marginBottom: '2rem',
-            fontSize: '1.875rem'
-          }}>
-            Player Stats
-          </h2>
-          {/* Player stats content */}
-        </main>
-      </div>
-    </>
+    <div style={{ minHeight: '100vh', backgroundColor: '#1B4D3E' }}>
+      <nav style={{ backgroundColor: '#3C2F2F', padding: '1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <h1 style={{ color: '#F5E8C7', fontSize: '1.5rem', fontWeight: 'bold' }}>BP Men’s League</h1>
+          </Link>
+          <div className="nav-links">
+            <Link href="/weekly-results" style={{ color: '#F5E8C7', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#C71585'} onMouseOut={(e) => e.target.style.color = '#F5E8C7'}>
+              Weekly Results
+            </Link>
+            <Link href="/player-stats" style={{ color: '#F5E8C7', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#C71585'} onMouseOut={(e) => e.target.style.color = '#F5E8C7'}>
+              Player Stats
+            </Link>
+            <Link href="/leaderboard" style={{ color: '#F5E8C7', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#C71585'} onMouseOut={(e) => e.target.style.color = '#F5E8C7'}>
+              Leaderboard
+            </Link>
+          </div>
+        </div>
+      </nav>
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 0' }}>
+        <h2 style={{ fontSize: '1.875rem', color: '#F5E8C7', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>Player Stats</h2>
+        {error && <p style={{ color: '#C71585', textAlign: 'center' }}>{error}</p>}
+        <div style={{ display: 'grid', gap: '1.5rem' }}>
+          {stats.map((player) => (
+            <div key={player.id} style={{ backgroundColor: '#F5E8C7', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+              <p style={{ color: '#3C2F2F' }}>Name: {player.name}</p>
+              <p style={{ color: '#3C2F2F' }}>Email: {player.email}</p>
+              <p style={{ color: '#3C2F2F' }}>Handicap: {player.handicap || 'N/A'}</p>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
   );
 }
