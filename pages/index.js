@@ -1,6 +1,12 @@
 import Head from 'next/head';
 import NavBar from '../components/NavBar';
 
+// Add this middleware to ensure JSON responses
+router.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 export default function Home() {
   return (
     <>
