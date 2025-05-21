@@ -1,0 +1,6 @@
+.nav-links {
+  display: flex;
+  gap: 3rem;
+}
+
+/* Add any additional global styles here */
