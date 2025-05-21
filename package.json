@@ -1,26 +1,13 @@
 {
-  "name": "bp-golf-app-frontend",
-  "version": "0.1.0",
-  "private": true,
+  "name": "bp-golf-app-backend",
+  "version": "1.0.0",
+  "main": "server.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node server.js"
   },
   "dependencies": {
-    "next": "^15.3.2",
-    "papaparse": "^5.5.3",
-    "react": "^18.2.0",
-    "react-datepicker": "^7.6.0",
-    "react-dom": "^18.2.0"
-  },
-  "main": "next.config.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+    "cors": "^2.8.5",
+    "express": "^4.21.0",
+    "sqlite3": "^5.1.7"
+  }
 }
