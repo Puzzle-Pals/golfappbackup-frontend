@@ -1,81 +1,42 @@
-import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
 
 export default function Messaging() {
-  const [players, setPlayers] = useState([]);
-  const [message, setMessage] = useState({ recipients: [], subject: '', body: '' });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [message, setMessage] = useState({ subject: '', content: '' });
 
-  useEffect(() => {
-    fetchPlayers();
-  }, []);
-
-  const fetchPlayers = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/api/players', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      });
-      setPlayers(response.data);
-    } catch (err) {
-      setError('Error fetching players');
-    }
-  };
-
-  const handleSendMessage = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      await axios.post('http://localhost:3000/api/messaging', {
-        recipients: message.recipients,
-        subject: message.subject,
-        message: message.body
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      });
-      setSuccess('Message sent successfully');
-      setMessage({ recipients: [], subject: '', body: '' });
-    } catch (err) {
-      setError('Error sending message');
-    }
+    axios.post('/api/messaging', message)
+      .then(() => {
+        alert('Message sent!');
+        setMessage({ subject: '', content: '' });
+      })
+      .catch(err => console.error('Send error:', err));
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-magnolia-cream mb-6 font-playfair">Messaging</h2>
-      <form onSubmit={handleSendMessage} className="mb-6">
-        <select
-          multiple
-          value={message.recipients}
-          onChange={(e) => setMessage({ ...message, recipients: Array.from(e.target.selectedOptions, option => option.value) })}
-          className="mb-2 p-3 bg-augusta-green text-magnolia-cream border-2 border-sky-blue rounded-lg w-full font-lato"
-          required
-        >
-          {players.map(player => (
-            <option key={player._id} value={player.email}>{player.name}</option>
-          ))}
-        </select>
+    <div style={{ padding: '1rem' }}>
+      <h2 style={{ marginBottom: '1rem' }}>Messaging</h2>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Subject"
           value={message.subject}
-          onChange={(e) => setMessage({ ...message, subject: e.target.value })}
-          className="mb-2 p-3 bg-augusta-green text-magnolia-cream border-2 border-sky-blue rounded-lg w-full font-lato"
+          onChange={(e) => setMessage({...message, subject: e.target.value})}
+          placeholder="Subject"
           required
+          style={{ display: 'block', marginBottom: '0.5rem', padding: '0.5rem', width: '100%' }}
         />
         <textarea
-          placeholder="Message"
-          value={message.body}
-          onChange={(e) => setMessage({ ...message, body: e.target.value })}
-          className="mb-2 p-3 bg-augusta-green text-magnolia-cream border-2 border-sky-blue rounded-lg w-full font-lato"
-          rows="5"
+          value={message.content}
+          onChange={(e) => setMessage({...message, content: e.target.value})}
+          placeholder="Message content"
           required
+          style={{ display: 'block', marginBottom: '0.5rem', padding: '0.5rem', width: '100%', minHeight: '100px' }}
         />
-        <button type="submit" className="bg-azalea-pink text-pine-brown px-6 py-3 rounded-lg font-lato font-bold hover:bg-sky-blue hover:text-magnolia-cream">
+        <button type="submit" style={{ padding: '0.5rem 1rem' }}>
           Send Message
         </button>
       </form>
-      {error && <p className="text-azalea-pink mb-4 font-lato">{error}</p>}
-      {success && <p className="text-augusta-green mb-4 font-lato">{success}</p>}
     </div>
   );
 }

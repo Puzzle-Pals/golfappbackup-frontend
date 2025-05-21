@@ -1,109 +1,66 @@
-import { useState, useEffect } from 'react';
 import axios from 'axios';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import { useState, useEffect } from 'react';
 
 export default function EventManagement() {
   const [events, setEvents] = useState([]);
-  const [newEvent, setNewEvent] = useState({ name: '', date: new Date(), course: 'Default Course' });
-  const [error, setError] = useState('');
+  const [newEvent, setNewEvent] = useState({ name: '', date: '', course: '' });
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  const fetchEvents = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/api/events', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      });
-      setEvents(response.data);
-    } catch (err) {
-      setError('Error fetching events');
-    }
+  const fetchEvents = () => {
+    axios.get('/api/events')
+      .then(res => setEvents(res.data))
+      .catch(err => console.error('Fetch error:', err));
   };
 
-  const handleAddEvent = async (e) => {
+  useEffect(() => { fetchEvents(); }, []);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:3000/api/events', newEvent, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      });
-      setEvents([...events, response.data]);
-      setNewEvent({ name: '', date: new Date(), course: 'Default Course' });
-    } catch (err) {
-      setError('Error adding event');
-    }
-  };
-
-  const handleDeleteEvent = async (id) => {
-    try {
-      await axios.delete(`http://localhost:3000/api/events/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
-      });
-      setEvents(events.filter(event => event._id !== id));
-    } catch (err) {
-      setError('Error deleting event');
-    }
+    axios.post('/api/events', newEvent)
+      .then(() => {
+        fetchEvents();
+        setNewEvent({ name: '', date: '', course: '' });
+      })
+      .catch(err => console.error('Create error:', err));
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-magnolia-cream mb-6 font-playfair">Event Management</h2>
-      <form onSubmit={handleAddEvent} className="mb-6">
+    <div style={{ padding: '1rem' }}>
+      <h2 style={{ marginBottom: '1rem' }}>Event Management</h2>
+      <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Event Name"
           value={newEvent.name}
-          onChange={(e) => setNewEvent({ ...newEvent, name: e.target.value })}
-          className="mb-2 p-3 bg-augusta-green text-magnolia-cream border-2 border-sky-blue rounded-lg w-full font-lato"
+          onChange={(e) => setNewEvent({...newEvent, name: e.target.value})}
+          placeholder="Event name"
           required
+          style={{ marginRight: '0.5rem', padding: '0.5rem' }}
         />
-        <DatePicker
-          selected={newEvent.date}
-          onChange={(date) => setNewEvent({ ...newEvent, date })}
-          className="mb-2 p-3 bg-augusta-green text-magnolia-cream border-2 border-sky-blue rounded-lg w-full font-lato"
+        <input
+          type="date"
+          value={newEvent.date}
+          onChange={(e) => setNewEvent({...newEvent, date: e.target.value})}
           required
+          style={{ marginRight: '0.5rem', padding: '0.5rem' }}
         />
         <input
           type="text"
-          placeholder="Course"
           value={newEvent.course}
-          onChange={(e) => setNewEvent({ ...newEvent, course: e.target.value })}
-          className="mb-2 p-3 bg-augusta-green text-magnolia-cream border-2 border-sky-blue rounded-lg w-full font-lato"
+          onChange={(e) => setNewEvent({...newEvent, course: e.target.value})}
+          placeholder="Course"
+          required
+          style={{ marginRight: '0.5rem', padding: '0.5rem' }}
         />
-        <button type="submit" className="bg-azalea-pink text-pine-brown px-6 py-3 rounded-lg font-lato font-bold hover:bg-sky-blue hover:text-magnolia-cream">
+        <button type="submit" style={{ padding: '0.5rem 1rem' }}>
           Add Event
         </button>
       </form>
-      {error && <p className="text-azalea-pink mb-4 font-lato">{error}</p>}
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Date</th>
-            <th>Course</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.map(event => (
-            <tr key={event._id}>
-              <td>{event.name}</td>
-              <td>{new Date(event.date).toLocaleDateString()}</td>
-              <td>{event.course}</td>
-              <td>
-                <button
-                  onClick={() => handleDeleteEvent(event._id)}
-                  className="bg-azalea-pink text-pine-brown px-4 py-2 rounded-lg font-lato font-bold hover:bg-sky-blue hover:text-magnolia-cream"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ marginTop: '1rem' }}>
+        {events.map(event => (
+          <div key={event.id} style={{ marginBottom: '0.5rem' }}>
+            {event.name} - {event.date} - {event.course}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

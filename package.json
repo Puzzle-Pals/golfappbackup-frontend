@@ -1,13 +1,29 @@
 {
-  "name": "bp-golf-app-backend",
+  "name": "bp-golf-app-frontend",
   "version": "1.0.0",
-  "main": "server.js",
+  "private": true,
   "scripts": {
-    "start": "node server.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "verify": "npm install && next build"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.0",
-    "sqlite3": "^5.1.7"
+    "axios": "^1.6.7",
+    "jsonwebtoken": "9.0.2",
+    "next": "^15.3.2",
+    "papaparse": "5.4.1",
+    "react": "18.2.0",
+    "react-datepicker": "7.4.0",
+    "react-dom": "18.2.0",
+    "sqlite3": "5.1.7"
+  },
+  "devDependencies": {
+    "autoprefixer": "10.4.16",
+    "postcss": "8.4.31"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

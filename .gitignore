@@ -1,17 +1,4 @@
-# Dependencies
 node_modules/
-
-# Environment
-.env*
-.env.local
-
-# Database
-backend/db/bp-golf-app.db
-
-# Next.js
 .next/
 out/
-
-# IDE
-.vscode/
-.idea/
+.env*.local

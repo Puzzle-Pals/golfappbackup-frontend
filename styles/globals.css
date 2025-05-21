@@ -1,6 +1,11 @@
+/* Only essential CSS reset - NO Tailwind */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 .nav-links {
   display: flex;
   gap: 3rem;
 }
-
-/* Add any additional global styles here */
