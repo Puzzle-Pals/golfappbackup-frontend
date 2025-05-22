@@ -1,61 +1,74 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { mockLeaderboard, mockScoringSystem } from '../utils/mockData';
+import Link from 'next/link';
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([]);
-  const [pointsSystem, setPointsSystem] = useState(false);
-  const [error, setError] = useState(null);
+  const [pointsSystemEnabled, setPointsSystemEnabled] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchLeaderboard = async () => {
       try {
-        const [leaderboardRes, pointsRes] = await Promise.all([
-          axios.get('https://bp-golf-app-backend.vercel.app/api/leaderboard', { timeout: 5000, retry: 3, retryDelay: 2000 }),
-          axios.get('https://bp-golf-app-backend.vercel.app/api/scoring_system', { timeout: 5000, retry: 3, retryDelay: 2000 }),
-        ]);
-        setLeaderboard(leaderboardRes.data);
-        setPointsSystem(pointsRes.data.pointsSystem);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setLeaderboard(data);
       } catch (err) {
-        console.error('Fetch leaderboard error:', err.message);
-        setError('Unable to load leaderboard, showing sample data');
-        setLeaderboard(mockLeaderboard);
-        setPointsSystem(mockScoringSystem.pointsSystem);
+        setError('Failed to fetch leaderboard');
       }
-    }
-    fetchData();
+    };
+    const fetchPointsSystem = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/scoring_system`);
+        if (!res.ok) throw new Error('Failed to fetch');
+        const data = await res.json();
+        setPointsSystemEnabled(data.pointsSystemEnabled || false);
+      } catch (err) {
+        setError('Failed to fetch points system');
+      }
+    };
+    fetchLeaderboard();
+    fetchPointsSystem();
   }, []);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1>Leaderboard</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: '#F5E8C7' }}>
-        <thead>
-          <tr style={{ backgroundColor: '#1B4D3E', color: '#F5E8C7' }}>
-            <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>Player</th>
-            <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>Wins</th>
-            <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>2nd Place</th>
-            <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>Highest Score</th>
-            <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>Deuce Pot</th>
-            <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>Closest to Pin</th>
-            {pointsSystem && <th style={{ padding: '10px', border: '1px solid #3C2F2F' }}>Points</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {leaderboard.map((player) => (
-            <tr key={player.id}>
-              <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.name}</td>
-              <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.wins}</td>
-              <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.secondPlace}</td>
-              <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.highestScore}</td>
-              <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.deucePot}</td>
-              <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.closestToPin}</td>
-              {pointsSystem && <td style={{ padding: '10px', border: '1px solid #3C2F2F' }}>{player.points}</td>}
-            </tr>
+    <div style={{ minHeight: '100vh', backgroundColor: '#1B4D3E' }}>
+      <nav style={{ backgroundColor: '#3C2F2F', padding: '1rem', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Link href="/" style={{ color: '#F5E8C7', fontSize: '1.5rem', fontWeight: 'bold', textDecoration: 'none' }}>
+            BP Men’s League
+          </Link>
+          <div className="nav-links">
+            <Link href="/weekly-results" style={{ color: '#F5E8C7', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#C71585'} onMouseOut={(e) => e.target.style.color = '#F5E8C7'}>
+              Weekly Results
+            </Link>
+            <Link href="/player-stats" style={{ color: '#F5E8C7', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#C71585'} onMouseOut={(e) => e.target.style.color = '#F5E8C7'}>
+              Player Stats
+            </Link>
+            <Link href="/leaderboard" style={{ color: '#F5E8C7', textDecoration: 'none', transition: 'color 0.2s' }} onMouseOver={(e) => e.target.style.color = '#C71585'} onMouseOut={(e) => e.target.style.color = '#F5E8C7'}>
+              Leaderboard
+            </Link>
+          </div>
+        </div>
+      </nav>
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '3rem 0' }}>
+        <h2 style={{ fontSize: '1.875rem', color: '#F5E8C7', fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'center' }}>Leaderboard</h2>
+        {error && <p style={{ color: '#C71585', textAlign: 'center' }}>{error}</p>}
+        <div style={{ display: 'grid', gap: '1.5rem' }}>
+          <div style={{ backgroundColor: '#F5E8C7', padding: '1rem', borderRadius: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'grid', gridTemplateColumns: pointsSystemEnabled ? '1fr 1fr 1fr' : '1fr 1fr', gap: '1rem' }}>
+            <p style={{ color: '#3C2F2F', fontWeight: 'bold' }}>Player ID</p>
+            <p style={{ color: '#3C2F2F', fontWeight: 'bold' }}>Total Points</p>
+            {pointsSystemEnabled && <p style={{ color: '#3C2F2F', fontWeight: 'bold' }}>Points</p>}
+          </div>
+          {leaderboard.map((entry) => (
+            <div key={entry.playerId} style={{ backgroundColor: '#F5E8C7', padding: '1.5rem', borderRadius: '0.5rem', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'grid', gridTemplateColumns: pointsSystemEnabled ? '1fr 1fr 1fr' : '1fr 1fr', gap: '1rem' }}>
+              <p style={{ color: '#3C2F2F' }}>{entry.playerId}</p>
+              <p style={{ color: '#3C2F2F' }}>{entry.totalPoints || 'N/A'}</p>
+              {pointsSystemEnabled && <p style={{ color: '#3C2F2F' }}>{entry.points || '0'}</p>}
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </main>
     </div>
   );
 }
