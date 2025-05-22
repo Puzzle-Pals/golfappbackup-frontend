@@ -70,7 +70,7 @@ export default function PlayerManagement() {
   };
 
   return (
-    <div>
+    <div className="admin-tab">
       <h2>Players</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleAddPlayer}>

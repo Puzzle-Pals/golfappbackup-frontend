@@ -49,7 +49,7 @@ export default function EventManagement() {
   };
 
   return (
-    <div>
+    <div className="admin-tab">
       <h2>Events</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleAddEvent}>

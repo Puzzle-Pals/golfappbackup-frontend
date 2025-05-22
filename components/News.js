@@ -42,7 +42,7 @@ export default function News() {
   };
 
   return (
-    <div>
+    <div className="admin-tab">
       <h2>News</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <form onSubmit={handleSubmitNews}>

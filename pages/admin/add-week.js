@@ -61,9 +61,9 @@ export default function AddWeek() {
   const prizes = calculatePrizes();
 
   return (
-    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+    <div className="admin-tab">
       <Link href="/admin">
-        <a style={{ color: '#D4A017', marginBottom: '20px', display: 'inline-block' }}>Back to Admin</a>
+        <a style={{ display: 'inline-block', marginBottom: '10px' }}>Back to Admin</a>
       </Link>
       <h1>Add Week</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}

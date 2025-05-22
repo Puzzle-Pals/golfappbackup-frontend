@@ -41,7 +41,7 @@ export default function WeeklyResultsManagement() {
   };
 
   return (
-    <div>
+    <div className="admin-tab">
       <h2>Weekly Results</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <button onClick={togglePointsSystem}>

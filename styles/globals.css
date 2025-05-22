@@ -9,12 +9,12 @@ body {
 }
 
 a {
-  color: #D4A017; /* Gold */
+  color: #1B4D3E; /* Green */
   text-decoration: none;
 }
 
 a:hover {
-  color: #1B4D3E; /* Green */
+  color: #C71585; /* Pink, retained for links as per EQMvdjvuT */
 }
 
 button {
@@ -27,7 +27,14 @@ button {
 }
 
 button:hover {
-  background-color: #D4A017; /* Gold */
+  background-color: #3C2F2F; /* Brown */
+}
+
+.admin-tab {
+  background-color: #D4A017; /* Gold, for admin tab boxes */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 * {
