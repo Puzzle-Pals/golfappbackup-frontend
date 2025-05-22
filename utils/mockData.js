@@ -16,12 +16,17 @@ export const mockEvents = [
 export const mockWeeklyResults = [
   {
     id: 1,
-    winners: ["John Doe"],
-    secondPlace: ["Jane Smith"],
-    highestScore: ["John Doe"],
-    deucePot: ["Jane Smith"],
-    closestToPin: ["John Doe"],
-    prizes: { winners: "30", secondPlace: "20", highestScore: "10", deucePot: "20", closestToPin: "20" },
+    weekNumber: 1,
+    winners: ["John Doe", "Jane Smith"],
+    winnersScore: 68,
+    secondPlace: ["Bob Johnson", "Alice Brown"],
+    secondPlaceScore: 70,
+    highestScore: ["Tom Wilson", "Sarah Davis"],
+    highestScoreScore: 85,
+    deucePot: ["John Doe"],
+    closestToPin: ["Jane Smith"],
+    prizePool: 100,
+    prizes: { winners: 30, secondPlace: 20, highestScore: 10, deucePot: 20, closestToPin: 20 },
   },
 ];
 
@@ -40,16 +45,4 @@ export const mockLeaderboard = [
     closestToPin: 1,
     points: 150,
   },
-  {
-    id: 2,
-    name: "Jane Smith",
-    wins: 1,
-    secondPlace: 2,
-    highestScore: 1,
-    deucePot: 2,
-    closestToPin: 0,
-    points: 120,
-  },
 ];
-
-export const mockScoringSystem = { pointsSystem: true };
