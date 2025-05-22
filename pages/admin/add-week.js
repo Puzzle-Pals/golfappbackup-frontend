@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import axios from 'axios';
+import { mockPlayers } from '../../utils/mockData';
 
 export default function AddWeek() {
   const [players, setPlayers] = useState([]);
@@ -14,12 +16,16 @@ export default function AddWeek() {
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players`);
-        if (!res.ok) throw new Error('Failed to fetch players');
-        const data = await res.json();
-        setPlayers(data);
+        const res = await axios.get('https://bp-golf-app-backend.vercel.app/api/players', {
+          timeout: 5000,
+          retry: 3,
+          retryDelay: 2000,
+        });
+        setPlayers(res.data);
       } catch (err) {
-        setError('Error loading players, please try again');
+        console.error('Fetch players error:', err.message);
+        setError('Unable to load players, showing sample data');
+        setPlayers(mockPlayers);
       }
     }
     fetchPlayers();
@@ -28,21 +34,17 @@ export default function AddWeek() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/weekly_results`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          winners,
-          secondPlace,
-          highestScore,
-          deucePot,
-          closestToPin,
-          prizePool: parseFloat(prizePool),
-        }),
+      const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/weekly_results', {
+        winners,
+        secondPlace,
+        highestScore,
+        deucePot,
+        closestToPin,
+        prizePool: parseFloat(prizePool),
       });
-      if (!res.ok) throw new Error('Failed to save week');
       alert('Week saved successfully');
     } catch (err) {
+      console.error('Save week error:', err.message);
       setError('Error saving week, please try again');
     }
   };

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { mockLeaderboard, mockScoringSystem } from '../utils/mockData';
 
 export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -9,16 +11,16 @@ export default function Leaderboard() {
     async function fetchData() {
       try {
         const [leaderboardRes, pointsRes] = await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaderboard`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/scoring_system`),
+          axios.get('https://bp-golf-app-backend.vercel.app/api/leaderboard', { timeout: 5000, retry: 3, retryDelay: 2000 }),
+          axios.get('https://bp-golf-app-backend.vercel.app/api/scoring_system', { timeout: 5000, retry: 3, retryDelay: 2000 }),
         ]);
-        if (!leaderboardRes.ok || !pointsRes.ok) throw new Error('Failed to fetch data');
-        const leaderboardData = await leaderboardRes.json();
-        const pointsData = await pointsRes.json();
-        setLeaderboard(leaderboardData);
-        setPointsSystem(pointsData.pointsSystem);
+        setLeaderboard(leaderboardRes.data);
+        setPointsSystem(pointsRes.data.pointsSystem);
       } catch (err) {
-        setError('Error loading leaderboard, please try again');
+        console.error('Fetch leaderboard error:', err.message);
+        setError('Unable to load leaderboard, showing sample data');
+        setLeaderboard(mockLeaderboard);
+        setPointsSystem(mockScoringSystem.pointsSystem);
       }
     }
     fetchData();

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import axios from 'axios';
+import { mockNews } from '../utils/mockData';
 
 export default function News() {
   const [news, setNews] = useState([]);
@@ -11,12 +13,16 @@ export default function News() {
   useEffect(() => {
     async function fetchNews() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/news`);
-        if (!res.ok) throw new Error('Failed to fetch news');
-        const data = await res.json();
-        setNews(data);
+        const res = await axios.get('https://bp-golf-app-backend.vercel.app/api/news', {
+          timeout: 5000,
+          retry: 3,
+          retryDelay: 2000,
+        });
+        setNews(res.data);
       } catch (err) {
-        setError('Error loading news, please try again');
+        console.error('Fetch news error:', err.message);
+        setError('Unable to load news, showing sample data');
+        setNews(mockNews);
       }
     }
     fetchNews();
@@ -25,18 +31,13 @@ export default function News() {
   const handleSubmitNews = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/news`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date, details }),
-      });
-      if (!res.ok) throw new Error('Failed to submit news');
-      const newNews = await res.json();
-      setNews([...news, newNews]);
+      const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/news', { date, details });
+      setNews([...news, res.data]);
       setDate(null);
       setDetails('');
       setError(null);
     } catch (err) {
+      console.error('Submit news error:', err.message);
       setError('Error submitting news, please try again');
     }
   };

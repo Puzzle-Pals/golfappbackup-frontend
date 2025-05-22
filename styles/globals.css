@@ -14,7 +14,7 @@ a {
 }
 
 a:hover {
-  color: #C71585; /* Pink, retained for links as per EQMvdjvuT */
+  color: #C71585; /* Pink, as per 3QbEU1AeK1CgB5oL7iC6LDRCXhka */
 }
 
 button {
@@ -31,7 +31,7 @@ button:hover {
 }
 
 .admin-tab {
-  background-color: #D4A017; /* Gold, for admin tab boxes */
+  background-color: #D4A017; /* Gold, changed from pink */
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;

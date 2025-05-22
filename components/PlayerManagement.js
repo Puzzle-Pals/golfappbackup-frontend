@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import Papa from 'papaparse';
+import axios from 'axios';
+import { mockPlayers } from '../utils/mockData';
 
 export default function PlayerManagement() {
   const [players, setPlayers] = useState([]);
@@ -11,12 +13,16 @@ export default function PlayerManagement() {
   useEffect(() => {
     async function fetchPlayers() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players`);
-        if (!res.ok) throw new Error('Failed to fetch players');
-        const data = await res.json();
-        setPlayers(data);
+        const res = await axios.get('https://bp-golf-app-backend.vercel.app/api/players', {
+          timeout: 5000,
+          retry: 3,
+          retryDelay: 2000,
+        });
+        setPlayers(res.data);
       } catch (err) {
-        setError('Error loading players, please try again');
+        console.error('Fetch players error:', err.message);
+        setError('Unable to load players, showing sample data');
+        setPlayers(mockPlayers);
       }
     }
     fetchPlayers();
@@ -25,18 +31,13 @@ export default function PlayerManagement() {
   const handleAddPlayer = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
-      });
-      if (!res.ok) throw new Error('Failed to add player');
-      const newPlayer = await res.json();
-      setPlayers([...players, newPlayer]);
+      const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/players', { name, email });
+      setPlayers([...players, res.data]);
       setName('');
       setEmail('');
       setError(null);
     } catch (err) {
+      console.error('Add player error:', err.message);
       setError('Error adding player, please try again');
     }
   };
@@ -51,20 +52,15 @@ export default function PlayerManagement() {
             name: row[0],
             email: row[1],
           }));
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players/upload`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(playersToUpload),
-          });
-          if (!res.ok) throw new Error('Failed to upload CSV');
-          const newPlayers = await res.json();
-          setPlayers([...players, ...newPlayers]);
+          const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/players/upload', playersToUpload);
+          setPlayers([...players, ...res.data]);
           setCsvFile(null);
           setError(null);
         },
         header: false,
       });
     } catch (err) {
+      console.error('Upload CSV error:', err.message);
       setError('Error uploading CSV, please try again');
     }
   };

@@ -1,84 +1,102 @@
 import { useState, useEffect } from 'react';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import Papa from 'papaparse';
+import axios from 'axios';
+import { mockPlayers } from '../utils/mockData';
 
-export default function EventManagement() {
-  const [events, setEvents] = useState([]);
+export default function PlayerManagement() {
+  const [players, setPlayers] = useState([]);
   const [name, setName] = useState('');
-  const [date, setDate] = useState(null);
-  const [details, setDetails] = useState('');
+  const [email, setEmail] = useState('');
+  const [csvFile, setCsvFile] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchEvents() {
+    async function fetchPlayers() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events`);
-        if (!res.ok) throw new Error('Failed to fetch events');
-        const data = await res.json();
-        setEvents(data);
+        const res = await axios.get('https://bp-golf-app-backend.vercel.app/api/players', {
+          timeout: 5000,
+          retry: 3,
+          retryDelay: 2000,
+        });
+        setPlayers(res.data);
       } catch (err) {
-        setError('Error loading events, please try again');
+        console.error('Fetch players error:', err.message);
+        setError('Unable to load players, showing sample data');
+        setPlayers(mockPlayers);
       }
     }
-    fetchEvents();
+    fetchPlayers();
   }, []);
 
-  const handleAddEvent = async (e) => {
+  const handleAddPlayer = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          date,
-          course: 'Lake of the Sandhills Golf Course',
-          details,
-        }),
-      });
-      if (!res.ok) throw new Error('Failed to add event');
-      const newEvent = await res.json();
-      setEvents([...events, newEvent]);
+      const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/players', { name, email });
+      setPlayers([...players, res.data]);
       setName('');
-      setDate(null);
-      setDetails('');
+      setEmail('');
       setError(null);
     } catch (err) {
-      setError('Error adding event, please try again');
+      console.error('Add player error:', err.message);
+      setError('Error adding player, please try again');
+    }
+  };
+
+  const handleUploadCSV = async (e) => {
+    e.preventDefault();
+    if (!csvFile) return;
+    try {
+      Papa.parse(csvFile, {
+        complete: async (result) => {
+          const playersToUpload = result.data.map((row) => ({
+            name: row[0],
+            email: row[1],
+          }));
+          const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/players/upload', playersToUpload);
+          setPlayers([...players, ...res.data]);
+          setCsvFile(null);
+          setError(null);
+        },
+        header: false,
+      });
+    } catch (err) {
+      console.error('Upload CSV error:', err.message);
+      setError('Error uploading CSV, please try again');
     }
   };
 
   return (
     <div className="admin-tab">
-      <h2>Events</h2>
+      <h2>Players</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleAddEvent}>
+      <form onSubmit={handleAddPlayer}>
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Event Name"
+          placeholder="Name"
           required
         />
-        <DatePicker
-          selected={date}
-          onChange={(d) => setDate(d)}
-          placeholderText="Select Date"
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
           required
         />
-        <textarea
-          value={details}
-          onChange={(e) => setDetails(e.target.value)}
-          placeholder="Event Details"
+        <button type="submit">Add Player</button>
+      </form>
+      <form onSubmit={handleUploadCSV}>
+        <input
+          type="file"
+          accept=".csv"
+          onChange={(e) => setCsvFile(e.target.files[0])}
         />
-        <button type="submit">Add Event</button>
+        <button type="submit">Upload CSV</button>
       </form>
       <ul>
-        {events.map((event) => (
-          <li key={event.id}>
-            {event.name} - {new Date(event.date).toLocaleDateString()} - {event.course}
-            {event.details && <p>{event.details}</p>}
-          </li>
+        {players.map((player) => (
+          <li key={player.id}>{player.name} - {player.email}</li>
         ))}
       </ul>
     </div>
