@@ -31,10 +31,19 @@ button:hover {
 }
 
 .admin-tab {
-  background-color: #C71585; /* Pink, per EQMvdjvuTkxS6eGZuK3mJ7hZ3g7Q */
+  background-color: #C71585; /* Pink */
   padding: 20px;
   border-radius: 8px;
   margin-bottom: 20px;
+}
+
+input[type="date"],
+textarea {
+  width: 100%;
+  padding: 8px;
+  margin: 8px 0;
+  border: 1px solid #3C2F2F;
+  border-radius: 4px;
 }
 
 * {

@@ -46,3 +46,5 @@ export const mockLeaderboard = [
     points: 150,
   },
 ];
+
+export const mockScoringSystem = { pointsSystem: true };

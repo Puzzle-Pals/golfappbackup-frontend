@@ -1,172 +1,104 @@
 import { useState, useEffect } from 'react';
 import Papa from 'papaparse';
+import axios from 'axios';
+import { mockPlayers } from '../utils/mockData';
 
 export default function PlayerManagement() {
   const [players, setPlayers] = useState([]);
-  const [newPlayer, setNewPlayer] = useState({ name: '', email: '' });
-  const [error, setError] = useState('');
-  const [file, setFile] = useState(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [csvFile, setCsvFile] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    async function fetchPlayers() {
+      try {
+        const res = await axios.get('https://bp-golf-app-backend.vercel.app/api/players', {
+          timeout: 5000,
+          retry: 3,
+          retryDelay: 2000,
+        });
+        setPlayers(res.data);
+      } catch (err) {
+        console.error('Fetch players error:', err.message);
+        setError('Unable to load players, showing sample data');
+        setPlayers(mockPlayers);
+      }
+    }
     fetchPlayers();
   }, []);
 
-  const fetchPlayers = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players`);
-      if (!res.ok) throw new Error('Failed to fetch');
-      const data = await res.json();
-      setPlayers(data);
-    } catch (err) {
-      setError('Failed to fetch players');
-    }
-  };
-
-  const handleSubmit = async (e) => {
+  const handleAddPlayer = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPlayer),
-      });
-      if (!res.ok) throw new Error('Failed to add player');
-      setNewPlayer({ name: '', email: '' });
-      fetchPlayers();
+      const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/players', { name, email });
+      setPlayers([...players, res.data]);
+      setName('');
+      setEmail('');
+      setError(null);
     } catch (err) {
-      setError(err.message);
+      console.error('Add player error:', err.message);
+      setError('Error adding player, please try again');
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players/${id}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('Failed to delete player');
-      fetchPlayers();
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleFileUpload = async (e) => {
+  const handleUploadCSV = async (e) => {
     e.preventDefault();
-    if (!file) {
-      setError('Please select a file');
-      return;
-    }
-    const formData = new FormData();
-    formData.append('file', file);
+    if (!csvFile) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players/upload`, {
-        method: 'POST',
-        body: formData,
+      Papa.parse(csvFile, {
+        complete: async (result) => {
+          const playersToUpload = result.data.map((row) => ({
+            name: row[0],
+            email: row[1],
+          }));
+          const res = await axios.post('https://bp-golf-app-backend.vercel.app/api/players/upload', playersToUpload);
+          setPlayers([...players, ...res.data]);
+          setCsvFile(null);
+          setError(null);
+        },
+        header: false,
       });
-      if (!res.ok) throw new Error('Failed to upload');
-      setFile(null);
-      fetchPlayers();
     } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleExport = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/players/export`);
-      if (!res.ok) throw new Error('Failed to export');
-      const text = await res.text();
-      const blob = new Blob([text], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'players.csv';
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      setError(err.message);
+      console.error('Upload CSV error:', err.message);
+      setError('Error uploading CSV, please try again');
     }
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#3C2F2F' }}>Manage Players</h2>
-      {error && <p style={{ color: '#C71585' }}>{error}</p>}
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', color: '#3C2F2F' }}>Name</label>
-          <input
-            type="text"
-            value={newPlayer.name}
-            onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })}
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #3C2F2F', borderRadius: '0.25rem' }}
-            required
-          />
-        </div>
-        <div>
-          <label style={{ display: 'block', color: '#3C2F2F' }}>Email</label>
-          <input
-            type="email"
-            value={newPlayer.email}
-            onChange={(e) => setNewPlayer({ ...newPlayer, email: e.target.value })}
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #3C2F2F', borderRadius: '0.25rem' }}
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          style={{ backgroundColor: '#C71585', color: '#F5E8C7', padding: '0.5rem 1rem', borderRadius: '0.25rem', transition: 'background-color 0.2s, color 0.2s' }}
-          onMouseOver={(e) => { e.target.style.backgroundColor = '#87CEEB'; e.target.style.color = '#3C2F2F'; }}
-          onMouseOut={(e) => { e.target.style.backgroundColor = '#C71585'; e.target.style.color = '#F5E8C7'; }}
-        >
-          Add Player
-        </button>
+    <div className="admin-tab">
+      <h2>Players</h2>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <form onSubmit={handleAddPlayer}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Name"
+          required
+        />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          required
+        />
+        <button type="submit">Add Player</button>
       </form>
-      <form onSubmit={handleFileUpload} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div>
-          <label style={{ display: 'block', color: '#3C2F2F' }}>Upload CSV</label>
-          <input
-            type="file"
-            accept=".csv"
-            onChange={(e) => setFile(e.target.files[0])}
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #3C2F2F', borderRadius: '0.25rem' }}
-          />
-        </div>
-        <button
-          type="submit"
-          style={{ backgroundColor: '#C71585', color: '#F5E8C7', padding: '0.5rem 1rem', borderRadius: '0.25rem', transition: 'background-color 0.2s, color 0.2s' }}
-          onMouseOver={(e) => { e.target.style.backgroundColor = '#87CEEB'; e.target.style.color = '#3C2F2F'; }}
-          onMouseOut={(e) => { e.target.style.backgroundColor = '#C71585'; e.target.style.color = '#F5E8C7'; }}
-        >
-          Upload CSV
-        </button>
+      <form onSubmit={handleUploadCSV}>
+        <input
+          type="file"
+          accept=".csv"
+          onChange={(e) => setCsvFile(e.target.files[0])}
+        />
+        <button type="submit">Upload CSV</button>
       </form>
-      <button
-        onClick={handleExport}
-        style={{ backgroundColor: '#C71585', color: '#F5E8C7', padding: '0.5rem 1rem', borderRadius: '0.25rem', transition: 'background-color 0.2s, color 0.2s' }}
-        onMouseOver={(e) => { e.target.style.backgroundColor = '#87CEEB'; e.target.style.color = '#3C2F2F'; }}
-        onMouseOut={(e) => { e.target.style.backgroundColor = '#C71585'; e.target.style.color = '#F5E8C7'; }}
-      >
-        Export Players
-      </button>
-      <div>
-        <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: '#3C2F2F', marginBottom: '1rem' }}>Existing Players</h3>
+      <ul>
         {players.map((player) => (
-          <div key={player.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#F5E8C7', padding: '1rem', borderRadius: '0.25rem', marginBottom: '0.5rem' }}>
-            <span style={{ color: '#3C2F2F' }}>
-              {player.name} ({player.email})
-            </span>
-            <button
-              onClick={() => handleDelete(player.id)}
-              style={{ backgroundColor: '#C71585', color: '#F5E8C7', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', transition: 'background-color 0.2s, color 0.2s' }}
-              onMouseOver={(e) => { e.target.style.backgroundColor = '#87CEEB'; e.target.style.color = '#3C2F2F'; }}
-              onMouseOut={(e) => { e.target.style.backgroundColor = '#C71585'; e.target.style.color = '#F5E8C7'; }}
-            >
-              Delete
-            </button>
-          </div>
+          <li key={player.id}>{player.name} - {player.email}</li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
