@@ -8,14 +8,10 @@
     "start": "next start"
   },
   "dependencies": {
-    "autoprefixer": "^10.4.20",
-    "axios": "^1.7.7",
-    "next": "^14.2.29",
+    "next": "15.3.2",
+    "react": "^19.0.0-rc-02c0e824-20241028",
+    "react-dom": "^19.0.0-rc-02c0e824-20241028",
     "papaparse": "^5.4.1",
-    "postcss": "^8.4.47",
-    "postcss-loader": "^8.1.1",
-    "react": "^18.3.1",
-    "react-datepicker": "^7.4.0",
-    "react-dom": "^18.3.1"
+    "react-datepicker": "^7.4.0"
   }
 }
