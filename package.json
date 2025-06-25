@@ -14,5 +14,9 @@
     "react": "^19.0.0-rc-02c0e824-20241028",
     "react-datepicker": "^7.4.0",
     "react-dom": "^19.0.0-rc-02c0e824-20241028"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6"
   }
 }
